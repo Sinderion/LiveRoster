@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2008
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2D2E443B-B380-4478-B26C-613B790EDE81}"
+	ProjectSection(SolutionItems) = preProject
+		LiveRoster.lua = LiveRoster.lua
+		LiveRoster.toc = LiveRoster.toc
+		LiveRoster.xml = LiveRoster.xml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9BBB0145-0F30-43AA-BC43-E40804756BB1}
+	EndGlobalSection
+EndGlobal
