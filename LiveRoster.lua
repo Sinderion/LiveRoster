@@ -1,5 +1,4 @@
 FrameXML_Debug(enable)
--- 
 -- TODO: RAID TEAMS/ROSTER
 -- Todo: Get rid of warning about mains in loop.  Clicking main from main guild while in alt guild, should copy the main's name.
 -- Achievement style toasts for invites? other things?
@@ -375,7 +374,7 @@ function LiveRoster_Go()
 			LIVEROSTER_RANK_ACTIVE = LIVEROSTER_RANK_DAYS
 			}
 	else
-		print("Found LRSETTINGS, trying to load.");
+		LRE("Found LRSETTINGS, trying to load.",1);
 		LIVEROSTER_RANK_COLORS = LRSETTINGS.LIVEROSTER_RANK_COLORS;
 		LIVEROSTER_RANK_DAYS   = LRSETTINGS.LIVEROSTER_RANK_DAYS
 		LIVEROSTER_RANK_ACTIVE = LRSETTINGS.LIVEROSTER_RANK_DAYS
@@ -393,7 +392,8 @@ function LiveRoster_Go()
 	--LiveRosterFramePictureBox:SetTexture("Interface\\Calendar\\Holidays\\Calendar_Fireworks")
 	--LiveRosterFrameTitleFontstring:SetText("\124TInterface\\Icons\\misc_arrowleft:16");
 	LiveRoster.UpdateRoster();
-	
+	LiveRoster.ShowOnline();
+
 end
 
 function LR_GetWords(str)
@@ -1078,6 +1078,8 @@ function LiveRosterFrame_Onload(self)
 				if not CanGuildInvite() and not CanGuildPromote() then
 					self:Hide();
 				end
+				-- Roster Management Automation has been disabled in 7.3 due to exploits. Hiding related button, hopefully just for now.
+				self:Hide();
 
 end
 
@@ -1990,7 +1992,8 @@ function LiveRoster_DoExtensionButtons(myToon)
 			GuildRosterButton_SetStringText(ExtensionButton.note, " ", true);
 			GuildRosterButton_SetStringText(ExtensionButton.officernote, " ", true);
 		end
-
+		-- Roster Management Automation has been disabled in 7.3 due to exploits. Hiding related button, hopefully just for now.
+		LiveRoster.ExtensionButtons.AddAltButton:Hide();
 				-- find this toon's alt.
 	else
 		
@@ -2268,6 +2271,26 @@ function LiveRoster.PrepRoster()
 
 end
 
+function LiveRoster.ShowOnline()
+
+	ShowUIPanel(GuildFrame);
+   GuildFrame:Show();
+   
+   GuildFrameTab2:Click();
+   --LRStoreView();
+   --ShowOfflineBookmark = false;
+   GuildRosterShowOfflineButton:SetChecked(false);
+   SetGuildRosterShowOffline(false);
+      
+   SortGuildRoster("level");
+   SortGuildRoster("name");
+   if (IsAddOnLoaded("ElvUI")) then
+	HideUIPanel(GuildFrame)	
+	end
+   
+
+
+end
 
 
 
