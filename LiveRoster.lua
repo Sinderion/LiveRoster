@@ -3,6 +3,115 @@ FrameXML_Debug(enable)
 -- Todo: Get rid of warning about mains in loop.  Clicking main from main guild while in alt guild, should copy the main's name.
 -- Achievement style toasts for invites? other things?
 
+
+--XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+-- Code to put in wowlua to mess with the guild roster in real time.
+
+function LR_GuildFrameMangle()
+
+
+-- Make guild frame great again!
+
+-- /script DEFAULT_CHAT_FRAME:AddMessage( GetMouseFocus():GetName() );
+
+-- /script DEFAULT_CHAT_FRAME:AddMessage(CanGuildPromote());
+
+--What are we doing? Specify here.
+local LR_Test_Store = false -- True ONLY after /reloadui
+local LR_Test_Reset = false
+LR_GRC_StoredPoints = LR_GRC_StoredPoints or { };
+--Store things
+--Guild roster container points
+
+
+if LR_Test_Store == true then
+   
+   --Store guild frame width
+   LR_Test_StoredGFWidth = GuildFrame:GetWidth();
+   --Store guild roster container points
+   local TotalPoints = GuildRosterContainer:GetNumPoints();
+	local i = 0;
+   for i = 1, TotalPoints do
+      LR_GRC_StoredPoints[i] = GuildRosterContainer:GetPoint(i);
+   end
+   
+end
+
+
+-- Reset to the stored values.
+if LR_Test_Reset then
+   
+   
+   GuildFrame:SetWidth(LR_Test_StoredGFWidth);
+   --GuildAddMemberButton:SetHeight(300);
+   local TotalPoints = GuildRosterContainer:GetNumPoints();
+   for i = 1, TotalPoints do
+      LR_GRC_StoredPoints[i] = GuildRosterContainer:GetPoint(i);
+   end
+   
+   
+   
+   
+else
+   
+   -- BLOW UP THE GUILD FRAME   
+   
+   --broad strokes
+   GuildFrame:SetWidth(700);
+   GuildRosterContainer:SetPoint("TOPLEFT",GuildFrame,"TOPLEFT",7,-96);
+   GuildRosterContainer:SetPoint("TOPRIGHT",GuildFrame,"TOPRIGHT",-26,-93);
+   
+   
+   --Update roster items
+   
+   local scrollFrame = GuildRosterContainer;  
+   local buttons = scrollFrame.buttons;
+   local numButtons = #buttons;
+   local i = 0;
+   for i = 1, numButtons do
+      GuildRosterContainer.buttons[i]:SetWidth(GuildFrame:GetWidth()-3);
+      GuildRosterButton_SetStringText(GuildRosterContainer.buttons[i].string4, nil, "Trash"..i);
+   end
+   
+   
+   for i= 1, 14 do
+      _G["GuildRosterContainerButton"..i.."HeaderButton"]:SetWidth(GuildFrame:GetWidth()-12)
+      
+      
+   end
+   
+   --New columns
+   local myframe = LRGuildRosterColumnButton6 or CreateFrame("Button","LRGuildRosterColumnButton6", GuildFrame ,"GuildRosterColumnButtonTemplate")
+   LRGuildRosterColumnButton6:SetPoint("LEFT","GuildRosterColumnButton4", "RIGHT",-2,0);
+   
+   local myframe = LRGuildRosterColumnButton7 or CreateFrame("Button","LRGuildRosterColumnButton7", GuildFrame ,"GuildRosterColumnButtonTemplate")
+   LRGuildRosterColumnButton7:SetPoint("LEFT",LRGuildRosterColumnButton6,"RIGHT",-2,0);
+   
+   LRGuildRosterColumnButton6:SetText("Crap");
+   LRGuildRosterColumnButton6:SetWidth(155);
+   LRGuildRosterColumnButton6:Show();
+   LRGuildRosterColumnButton7:SetText("Junk");
+   LRGuildRosterColumnButton7:SetWidth(315);
+   LRGuildRosterColumnButton7:Show();
+   
+   
+   
+end
+
+
+
+
+
+
+
+end
+
+
+--XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+
 -- Debug
 LREVERBOSE = 0;
 LREDEBUG = 0;
