@@ -1,5 +1,4 @@
 FrameXML_Debug(enable)
--- 
 -- TODO: RAID TEAMS/ROSTER
 -- Todo: Get rid of warning about mains in loop.  Clicking main from main guild while in alt guild, should copy the main's name.
 -- Achievement style toasts for invites? other things?
@@ -123,7 +122,7 @@ StaticPopupDialogs["LR_PROMOTION_CONFIRM"] = {
 		SetGuildMemberRank(GetGuildRosterSelection(), LiveRoster.Roster.Promotions[LiveRoster_Selected_Promotion].NewRankIndex+1) --seems to need a +1
 		GuildRoster_Update();
 		LiveRoster.UpdateRoster();
-		C_Timer.After(1,function(self) LiveRoster_NextPromotion(LiveRosterPromotionNext,"LeftButton"); PlaySound("LOOTWINDOWCOINSOUND"); LiveRoster.UpdateRoster(); end);
+		C_Timer.After(1,function(self) LiveRoster_NextPromotion(LiveRosterPromotionNext,"LeftButton"); PlaySound(SOUNDKIT.LOOT_WINDOW_COIN_SOUND); LiveRoster.UpdateRoster(); end);
 		
 	end,
 	OnShow = function(self)
@@ -145,7 +144,7 @@ StaticPopupDialogs["LR_ALT_PROMOTION_CONFIRM"] = {
 		SetGuildMemberRank(GetGuildRosterSelection(), LiveRoster.AltPromotions[LiveRoster_Selected_AltPromotion].NewRankIndex+1) --seems to need a +1
 		GuildRoster_Update();
 		LiveRoster.UpdateRoster();
-		C_Timer.After(1,function(self) LiveRoster_AltPromotion(LiveRosterPromotionAlts,"LeftButton"); PlaySound("LOOTWINDOWCOINSOUND") end);
+		C_Timer.After(1,function(self) LiveRoster_AltPromotion(LiveRosterPromotionAlts,"LeftButton"); PlaySound(SOUNDKIT.LOOT_WINDOW_COIN_SOUND) end);
 		LiveRoster.AltPromotions = nil;
 	end,
 	OnShow = function(self)
@@ -359,7 +358,7 @@ function LiveRoster_Go()
 	LiveRoster_PromoteButtonText = "Player Promotions";
 	LR_ALTBUTTONTEXT = "Alt Promotions";
 	LiveRosterSearchBox.autoCompleteParams = AUTOCOMPLETE_LIST_TEMPLATES.IN_GUILD
-	--PlaySound("UChatScrollButton");
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
 	--NavigatePromotions(-1);
 	SLASH_LIVEROSTER1, SLASH_LIVEROSTER2 = '/liveroster','/lr' -- 3.
 	
@@ -375,7 +374,7 @@ function LiveRoster_Go()
 			LIVEROSTER_RANK_ACTIVE = LIVEROSTER_RANK_DAYS
 			}
 	else
-		print("Found LRSETTINGS, trying to load.");
+		LRE("Found LRSETTINGS, trying to load.",1);
 		LIVEROSTER_RANK_COLORS = LRSETTINGS.LIVEROSTER_RANK_COLORS;
 		LIVEROSTER_RANK_DAYS   = LRSETTINGS.LIVEROSTER_RANK_DAYS
 		LIVEROSTER_RANK_ACTIVE = LRSETTINGS.LIVEROSTER_RANK_DAYS
@@ -393,7 +392,8 @@ function LiveRoster_Go()
 	--LiveRosterFramePictureBox:SetTexture("Interface\\Calendar\\Holidays\\Calendar_Fireworks")
 	--LiveRosterFrameTitleFontstring:SetText("\124TInterface\\Icons\\misc_arrowleft:16");
 	LiveRoster.UpdateRoster();
-	
+	LiveRoster.ShowOnline();
+
 end
 
 function LR_GetWords(str)
@@ -1055,7 +1055,7 @@ function ExtensionButton_OnClick(self, button)
 		if ( IsModifiedClick() ) then
 			LiveRoster_NameCopy();
 		else
-			PlaySound("igCharacterInfoOpen");
+			PlaySound(SOUNDKIT.IG_QUEST_LIST_OPEN);
 		end
 	end
 end
@@ -1078,6 +1078,8 @@ function LiveRosterFrame_Onload(self)
 				if not CanGuildInvite() and not CanGuildPromote() then
 					self:Hide();
 				end
+				-- Roster Management Automation has been disabled in 7.3 due to exploits. Hiding related button, hopefully just for now.
+				self:Hide();
 
 end
 
@@ -1098,7 +1100,7 @@ function LR_SearchBox_OnEnterPressed(self)
 			--Open the box		
 	end
 	
-	PlaySound("UChatScrollButton");
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
 end
 
 function LR_SearchBox_OnEditFocusLost(self)
@@ -1192,7 +1194,7 @@ end
 
 function LiveRoster_AltPromotion(self, button)
 
-	PlaySound("UChatScrollButton");
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
 	if LiveRoster.Loaded == 0 then return; end
 	
 	
@@ -1340,7 +1342,7 @@ function LiveRoster_NextPromotion(self, button)
 
 -- Animations for scrolling the guild roster(even not animation...)
 
-	PlaySound("UChatScrollButton");
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
 	if LiveRoster.Loaded == 0 then return; end
 	
 	
@@ -1990,7 +1992,8 @@ function LiveRoster_DoExtensionButtons(myToon)
 			GuildRosterButton_SetStringText(ExtensionButton.note, " ", true);
 			GuildRosterButton_SetStringText(ExtensionButton.officernote, " ", true);
 		end
-
+		-- Roster Management Automation has been disabled in 7.3 due to exploits. Hiding related button, hopefully just for now.
+		--LiveRoster.ExtensionButtons.AddAltButton:Hide();
 				-- find this toon's alt.
 	else
 		
@@ -2268,6 +2271,26 @@ function LiveRoster.PrepRoster()
 
 end
 
+function LiveRoster.ShowOnline()
+
+	ShowUIPanel(GuildFrame);
+   GuildFrame:Show();
+   
+   GuildFrameTab2:Click();
+   --LRStoreView();
+   --ShowOfflineBookmark = false;
+   GuildRosterShowOfflineButton:SetChecked(false);
+   SetGuildRosterShowOffline(false);
+      
+   SortGuildRoster("level");
+   SortGuildRoster("name");
+   if (IsAddOnLoaded("ElvUI")) then
+	HideUIPanel(GuildFrame)	
+	end
+   
+
+
+end
 
 
 
