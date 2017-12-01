@@ -56,32 +56,102 @@ if LR_Test_Reset then
 else
    
    -- BLOW UP THE GUILD FRAME   
+
+   local LR_Mangle = {
+   
+	guildFrame = {
+	
+		height = 600,
+		width = 700
+		},
+    
+	guildRosterContainer = {
+
+		TOPLEFT = { 
+			x = 7,
+			y = -270
+		},
+		TOPRIGHT = { -- Not using
+			x = -26,
+			y = -93
+		},
+		BOTTOM = {
+			x = 0,
+			y = 15
+		},
+		width = 300,
+		height = 0  -- not using.
+
+	},
+   
+	guildRosterContainerButtons = {
+		widthOffset = 0
+	},
+   
+	guildRosterContainerButtonHeaders = {
+		widthOffset = -12
+	},
+
+	guildRosterColumnButtons = {
+		x = 0,
+		y = -20
+	}
+
+
+
+   
+   };
+
+   
+
    
    --broad strokes
-   GuildFrame:SetWidth(700);
-   GuildRosterContainer:SetPoint("TOPLEFT",GuildFrame,"TOPLEFT",7,-96);
-   GuildRosterContainer:SetPoint("TOPRIGHT",GuildFrame,"TOPRIGHT",-26,-93);
+
+
+ --GuildFrame
+   GuildFrame:SetWidth(LR_Mangle.guildFrame.width);
+   GuildFrame:SetHeight(LR_Mangle.guildFrame.height);
    
+ --GuildRosterContainer
+	GuildRosterContainer:ClearAllPoints();
+    GuildRosterContainer:SetPoint("TOPLEFT",GuildFrame,"TOPLEFT",LR_Mangle.guildRosterContainer.TOPLEFT.x,LR_Mangle.guildRosterContainer.TOPLEFT.y);
+    --GuildRosterContainer:SetPoint("BOTTOM",GuildFrame,"BOTTOM",LR_Mangle.guildRosterContainer.BOTTOM.x,LR_Mangle.guildRosterContainer.BOTTOM.y);
+
+   --GuildRosterContainer:SetPoint("TOPRIGHT",GuildFrame,"TOPRIGHT",LR_Mangle.guildRosterContainer.TOPRIGHT.x,LR_Mangle.guildRosterContainer.TOPRIGHT.y);
+   GuildRosterContainer:SetWidth(LR_Mangle.guildRosterContainer.width);
    
-   --Update roster items
+
+ --GuildRosterContainerButtons
    
    local scrollFrame = GuildRosterContainer;  
    local buttons = scrollFrame.buttons;
    local numButtons = #buttons;
    local i = 0;
    for i = 1, numButtons do
-      GuildRosterContainer.buttons[i]:SetWidth(GuildFrame:GetWidth()-3);
+      GuildRosterContainer.buttons[i]:SetWidth(GuildRosterContainer:GetWidth() + LR_Mangle.guildRosterContainerButtons.widthOffset);
       GuildRosterButton_SetStringText(GuildRosterContainer.buttons[i].string4, nil, "Trash"..i);
    end
    
    
    for i= 1, 14 do
-      _G["GuildRosterContainerButton"..i.."HeaderButton"]:SetWidth(GuildFrame:GetWidth()-12)
+      _G["GuildRosterContainerButton"..i.."HeaderButton"]:SetWidth(GuildRosterContainer:GetWidth()+LR_Mangle.guildRosterContainerButtonHeaders.widthOffset)
       
       
    end
    
    --New columns
+
+   -- COLUMNS!
+   local columnIndex = 0;
+   for columnIndex = 1, GUILD_ROSTER_MAX_COLUMNS do
+		local columnButton = _G["GuildRosterColumnButton"..columnIndex];
+		columnButton:ClearAllPoints();
+		columnButton:SetPoint("BOTTOM", GuildRosterContainer, "TOP", LR_Mangle.guildRosterColumnButtons.x, LR_Mangle.guildRosterColumnButtons.y);
+
+
+	end
+
+
    local myframe = LRGuildRosterColumnButton6 or CreateFrame("Button","LRGuildRosterColumnButton6", GuildFrame ,"GuildRosterColumnButtonTemplate")
    LRGuildRosterColumnButton6:SetPoint("LEFT","GuildRosterColumnButton4", "RIGHT",-2,0);
    
