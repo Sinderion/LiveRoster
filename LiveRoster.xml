@@ -232,7 +232,7 @@
 					<OnEnterPressed function="LR_SearchBox_OnEnterPressed" />
 					<OnEditFocusGained>
 						SearchBoxTemplate_OnEditFocusGained(self);
-						PlaySound("UChatScrollButton");
+						PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
 					</OnEditFocusGained>
 			<!--		<OnTextChanged function="LR_SearchBox_OnTextChanged"/>
 					<OnLoad function="LR_SearchBox_OnLoad"/>
