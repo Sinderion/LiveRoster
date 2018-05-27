@@ -280,7 +280,7 @@
 					</OnLoad>-->
 				</Scripts>
 	</Button>
-<!-- Options Panel -->
+<!-- Options Panel
 
 	<Frame name="LiveRosterOptionsFrame">
         <Frames>
@@ -402,8 +402,7 @@ Live Roster Frame
 			</Anchor>
 		</Anchors>
 				<Scripts>
-					<OnClick function="LiveRoster_NextDemotion" />
-						
+
 					
 					<OnEnter>
 						self:SetWidth(190);

@@ -1,9 +1,264 @@
-FrameXML_Debug(enable)
+print("LiveRoster trying to load!");
 -- TODO: RAID TEAMS/ROSTER
 -- Todo: Get rid of warning about mains in loop.  Clicking main from main guild while in alt guild, should copy the main's name.
 -- Achievement style toasts for invites? other things?
+--Config Options and defaults
+LR_CommentBits = { None = "Nothing",textPrefix = "Specific Text",inviter = "Inviters name", date = "Invite Date"};
+LR_DateFormats = { isoDate = "Short ISO: yymmdd - 150103",  mmddyyyylong= "Long US: mm/dd/yyyy - 01/03/2015", mmddyyshort = "Short US: mmddyy - 010315", ddmmyyyylong = "Long: ddmmyyyy - 3/01/2015",ddmmyyshort = "Short: ddmmyy - 030115", military ="Mil: ddmmmyy 01Jan15"};
+LR_DateFormatLenghts = {6,10,6,10,6,7};
+LIVEROSTER_RANK_COLORS = {
+	"FFFF0000","FFFF8000", "FFFFD700", "FFFFD700",  "FFa335EE", "FF0070DD", "FF1EFF00", "FFFFFFFF", "FF9D9D9D"
+};
+LR_OptionsTable = {
+    type = "group",
+    handler = LiveRoster,
+    args = {
+        enable = {
+            name = "Enable Live Roster",
+            desc = "Enables / disables the addon",
+            type = "toggle",
+            set = "SetEnable",
+            get = "GetEnable"
+        },
+        colors={
+            name = "Colors",
+            type = "group",
+      args={
+                rankcolor0 = {
+                    name = "Guild Master color(Rank 0)",
+                    type = "color",
+                    set = "SetRankColor",
+                    get = "GetRankColor"
+                }
+            }
 
--- Debug
+        },
+        promotions = {
+            name = "Promotions",
+            type = "group",
+
+            args = {
+                spacer1 = {
+                    type = "header",
+                    name = "Rank 1(second highest rank, just below guild master)",
+                    order = 0
+                },
+                rank1promotionenabled = {
+                    name = "Rank 1: Enable auto promotion?",
+                    type = "toggle",
+                    set = function(_,value) LiveRoster:SetEnablePromotion(1,value) end,
+                    get = function() return LiveRoster:GetEnablePromotion(1) end,
+                    order = 1
+                },
+                rank1promotiondays = {
+                    name = "Days in guild required",
+                    type = "range",
+                    desc = "0 to 360 can be entered in the text box.",
+                    min = 1,
+                    max = 360,
+                    step = 1,
+                    bigStep = 30,
+                    softMin = 30,
+                    softMax = 270,
+                    set = function(_,value) LiveRoster:SetPromotionDays(1,value);  end,
+                    get = function() return LiveRoster:GetPromotionDays(1); end,
+                    order = 2
+                },
+                rank1dayssinceactive = {
+                    name = "Maximum days innactive",
+                    type = "range",
+                    desc = "0 to 360 can be entered in the text box.",
+                    order = 3,
+                    min = 1,
+                    max = 360,
+                    step = 1,
+                    bigStep = 3,
+                    softMin = 3,
+                    softMax = 60,
+                    set = function(_,value) LiveRoster:SetActiveDays(1,value);  end,
+                    get = function() return LiveRoster:GetActiveDays(1); end
+                }
+            }
+        },
+        comments = {
+            type = "group",
+            name = "Comment Data",
+            args = {
+                dateFormat = {
+                    name = "Date format",
+                    type = "select",
+                    style = "dropdown",
+                    values = LR_DateFormats,
+                    set = function(_,value) LiveRoster.db.profile.comments.dateFormat = value; end,
+                    get = function() return LiveRoster.db.profile.comments.dateFormat; end
+
+                },
+                header1 = {
+                    type = "header",
+                    name = "Comment formats %d is the date, %i is the inviter, %m is the main name.",
+                    order = 0
+                },
+                mainFormat = {
+                    name = "Comment format for main characters",
+                    type = "input",
+                    --validate = function(_,value) LiveRoster:ValidateCommentFormat(value); end,
+                    set = function(_,value) LiveRoster.db.profile.mainFormat = value; end,
+                    get = function(_) return LiveRoster.db.profile.mainFormat; end
+                },
+                altFormat = {
+                    name = "Comment format for alt characters",
+                    type = "input",
+                    --validate = function(_,value) LiveRoster:ValidateCommentFormat(value); end,
+                    set = function(_,value) LiveRoster.db.profile.comments.altFormat = value; end,
+                    get = function(_) return LiveRoster.db.profile.comments.altFormat; end
+                }
+            }
+
+        }
+    }
+}
+
+
+
+
+
+
+
+LR_OptionsDefaults = {
+    -- goes with item quality colors
+    -- 1 - red, 2-- legendary, 3, 4 -- yellow, 5 - epic, down from there to 9 - grey
+    profile = {
+        enable = true,
+        colors={
+            rankColor0 = {
+                    r = 255,
+                    g = 0,
+                    b = 0,
+                    a = 1
+            }
+        },
+        promotions = {
+                rank1promotionenabled = false,
+                rank1promotiondays = 360,
+                rank1dayssinceactive = 7
+        },
+        comments = {
+            dateFormat = 2,
+            mainFormat = "Main %d %i",
+            altFormat = "Alt %m"
+        }
+    }
+
+}
+for i = 0, 9 do
+	LR_OptionsTable.args.colors["rankColor"..i] = {
+		name = "Rank "..i.." color",
+		type = "color",
+		set = "SetRankColor",
+		get = "GetRankColor"
+    }
+	LR_OptionsDefaults.profile.colors["rankColor"..i] = {r = 255, g = 0, b = 0, a = 1};
+end
+
+
+
+	--[[
+    -- Rank 0 = guild master. 1  2  3  4    5    6   7   8 (0 and 9 don't need promotion data.)
+    LIVEROSTER_RANK_DAYS   = {0, 0, 0, 0, 274, 152, 60, 30}
+    LIVEROSTER_RANK_ACTIVE = {0, 0, 0, 0,   7,   7,  7,  6}
+
+    LIVEROSTER_CLASS_COLORS = {
+        Druid = "FFFF7D0A",
+        Hunter = "FFABD473",
+        Mage = "FF69CCF0",
+        Monk = "FF00FF96",
+        Paladin = "FFF58CBA",
+        Priest = "FFFFFFFF",
+        Rogue = "FFFFF569",
+        Shaman = "FF0070DE",
+        Warlock = "FF9482C9",
+        Warrior  = "FFC79C6E"
+    }
+
+    LIVEROSTER_CLASS_COLORS["Death Knight"] = "FFC41F3B";
+    LIVEROSTER_CLASS_COLORS["Demon Hunter"] = "FFA335EE";
+
+
+
+    }
+    ]]
+function LR_ColorBreak(color)
+	-- break FFFF0000 into 255, 0, 0, 255. r, g, b, a from AARRGGBB
+	return tonumber(string.sub(color,3,4),16), tonumber(string.sub(color,5,6),16),tonumber(string.sub(color,7,8),16),tonumber(string.sub(color,1,2),16)
+end
+
+
+LiveRoster = LibStub("AceAddon-3.0"):NewAddon("LiveRoster", "AceConsole-3.0", "AceEvent-3.0");
+function LiveRoster:OnInitialize()
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("LiveRoster", LR_OptionsTable, {"lr", "liveroster"})
+    self.db = LibStub("AceDB-3.0"):New("LiveRosterDB", LR_OptionsDefaults, false);
+    self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("LiveRoster", "LiveRoster");
+    self.db.profile.promotionDays = self.db.profile.promotionDays or {}; -- a table of defaults.
+
+    self.db.profile.activeDays = self.db.profile.activeDays or {}; -- a table of defaults.
+    self.db.profile.promotionEnabled = self.db.profile.promotionEnabled or {}; --a table of defaults
+    for i, v in ipairs(LIVEROSTER_RANK_COLORS) do
+        if not self.db.profile.colors["rankColor"..i] then
+			local r, g, b, a = LR_ColorBreak(v);
+            self.db.profile.colors["rankColor"..i] = { r = r, g = g, b = b, a = a};
+		end
+	end
+end
+
+function LiveRoster:OnEnable()
+    --Register events here.
+end
+function LiveRoster:OnDisable()
+    --Unregister events here.
+end
+
+
+
+
+function LiveRoster:SetEnable(_,value)
+    self.db.profile.enabled = value;
+end
+function LiveRoster:GetEnable(_)
+    return self.db.profile.enable;
+end
+
+function LiveRoster:ValidateCommentFormat(_,value)
+--use date length, names included, text included, to decide if comment could be too long.
+
+end
+function LiveRoster:SetActiveDays(rank,value)
+    self.db.profile.promotions["rank"..rank.."dayssinceactive"] = value;
+end
+function LiveRoster:GetActiveDays(rank)
+    return self.db.profile.promotions["rank"..rank.."dayssinceactive"];
+end
+function LiveRoster:SetPromotionDays(rank,value)
+    self.db.profile.promotions["rank"..rank.."promotiondays"] = value;
+end
+function LiveRoster:GetPromotionDays(rank)
+    return self.db.profile.promotions["rank"..rank.."promotiondays"];
+end
+function LiveRoster:SetEnablePromotion(rank,value)
+    self.db.profile.promotions["rank"..rank.."promotionenabled"] = value;
+end
+function LiveRoster:GetEnablePromotion(rank)
+    return self.db.profile.promotions["rank"..rank.."promotionenabled"];
+end
+function LiveRoster:SetRankColor(info, r,g,b)
+    self.db.profile.colors[info[#info]] = {r = r, g = g, b = b, a = 1};
+end
+function LiveRoster:GetRankColor(info)
+    print(tostring(info[#info]));
+    local c = self.db.profile.colors[info[#info]] or {r = 1, g= 1, b=1, a=1};
+    return c.r, c.g, c.b, 1;
+end
+
+    -- Debug
 LREVERBOSE = 0;
 LREDEBUG = 0;
 LRLASTMEM = 0;
@@ -13,10 +268,9 @@ LR_USE_SNAPSHOT = 1; -- Enable creating or using a snapshot depending on if in m
 LRSNAPSHOT = LRSNAPSHOT or { Toons = { } }; 
 LR_SnapshotIndex = {};
 
-LiveRoster = { 
-toons = {},
-players = {}
-}
+LiveRoster.toons = {};
+LiveRoster.players = {};
+
 LiveRoster.ExtensionButtons = {
 Main = nil
 }
@@ -38,7 +292,7 @@ LiveRoster_Selected_AltPromotionIndex = 0;
 LiveRoster_NumPromotions = 0;
 LiveRoster_NumAltPromotions = 0;
 LiveRosterCreated = false;
-LiveRoster = { };
+--LiveRoster = { };
 LiveRoster.Loaded = 0;
 LR_ALTBUTTONTEXT = "Alt Promotions"
 LR_DIRTY = nil;
@@ -209,33 +463,6 @@ StaticPopupDialogs["LR_SMART_ADD_GUILDMEMBER"] = {
 
 -- init depending on what you want to see.
 
--- goes with item quality colors
--- 1 - red, 2-- legendary, 3, 4 -- yellow, 5 - epic, down from there to 9 - grey
-
-LIVEROSTER_RANK_COLORS = {
-
-"FFFF0000","FFFF8000", "FFFFD700", "FFFFD700",  "FFa335EE", "FF0070DD", "FF1EFF00", "FFFFFFFF", "FF9D9D9D"
-
-}
--- Rank 0 = guild master. 1  2  3  4    5    6   7   8 (0 and 9 don't need promotion data.)
-LIVEROSTER_RANK_DAYS   = {0, 0, 0, 0, 274, 152, 60, 30}
-LIVEROSTER_RANK_ACTIVE = {0, 0, 0, 0,   7,   7,  7,  6}
-
-LIVEROSTER_CLASS_COLORS = {
-Druid = "FFFF7D0A",
-Hunter = "FFABD473",
-Mage = "FF69CCF0",
-Monk = "FF00FF96",
-Paladin = "FFF58CBA",
-Priest = "FFFFFFFF",
-Rogue = "FFFFF569",
-Shaman = "FF0070DE",
-Warlock = "FF9482C9",
-Warrior  = "FFC79C6E"
-}
-
-LIVEROSTER_CLASS_COLORS["Death Knight"] = "FFC41F3B";
-LIVEROSTER_CLASS_COLORS["Demon Hunter"] = "FFA335EE";
 
 
 
@@ -307,10 +534,10 @@ end
 
 function LiveRoster_Go()
 
-	self = LiveRosterFrame;
-	LRServer = GetRealmName();
+	local self = LiveRosterFrame;
+	local LRServer = GetRealmName();
 	LRServer,_ = string.gsub(LRServer,"%s+", "")
-	LRAP = 0;
+	local LRAP = 0;
 	--if LiveRoster.Loaded == 0 then
 
 		
@@ -329,9 +556,9 @@ function LiveRoster_Go()
 		--hooksecurefunc("StaticPopupDialogs.ADD_GUILDMEMBER.OnAccept",LiveRoster.AddMemberOnAcceptPostHook)
 		LiveRoster_Main = self;
 		self:RegisterEvent("ADDON_LOADED")
-		self:RegisterEvent("VARIABLES_LOADED")
-		self:RegisterEvent("PLAYER_ENTERING_WORLD")
-		self:RegisterEvent("SAVED_VARIABLES_TOO_LARGE")
+		--self:RegisterEvent("VARIABLES_LOADED")
+		--self:RegisterEvent("PLAYER_ENTERING_WORLD")
+		--self:RegisterEvent("SAVED_VARIABLES_TOO_LARGE")
 		self:RegisterEvent("CHAT_MSG_SYSTEM");
 		--Just to try and trigger events.
 		self:RegisterEvent("GUILD_ROSTER_UPDATE")

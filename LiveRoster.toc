@@ -3,11 +3,12 @@
 ## Notes: Guild Roster Upgrades
 ## Author: Sinderion@Shadow Council
 ## Version: 1.1
-## SavedVariables: LRSETTINGS, LRSNAPSHOT
-## LoadOnDemand: 1
+## SavedVariables: LRSETTINGS, LRSNAPSHOT, LiveRosterDB
 ## LoadWith: Blizzard_GuildUI
 
-
+embeds.xml
 LiveRoster.xml
 LiveRoster.lua
+
+
 
