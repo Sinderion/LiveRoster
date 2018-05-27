@@ -9,6 +9,7 @@ LR_DateFormatLenghts = {6,10,6,10,6,7};
 LIVEROSTER_RANK_COLORS = {
 	"FFFF0000","FFFF8000", "FFFFD700", "FFFFD700",  "FFa335EE", "FF0070DD", "FF1EFF00", "FFFFFFFF", "FF9D9D9D"
 };
+LiveRoster = LibStub("AceAddon-3.0"):NewAddon("LiveRoster", "AceConsole-3.0", "AceEvent-3.0");
 LR_OptionsTable = {
     type = "group",
     handler = LiveRoster,
@@ -16,6 +17,7 @@ LR_OptionsTable = {
         enable = {
             name = "Enable Live Roster",
             desc = "Enables / disables the addon",
+            order = 0,
             type = "toggle",
             set = "SetEnable",
             get = "GetEnable"
@@ -23,20 +25,21 @@ LR_OptionsTable = {
         colors={
             name = "Colors",
             type = "group",
-      args={
-                rankcolor0 = {
+            order = 3,
+            args={
+          --[[      rankColor0 = {
                     name = "Guild Master color(Rank 0)",
                     type = "color",
                     set = "SetRankColor",
                     get = "GetRankColor"
-                }
+                }]]
             }
 
         },
         promotions = {
             name = "Promotions",
             type = "group",
-
+            order = 1,
             args = {
                 spacer1 = {
                     type = "header",
@@ -83,6 +86,7 @@ LR_OptionsTable = {
         comments = {
             type = "group",
             name = "Comment Data",
+            order = 2,
             args = {
                 dateFormat = {
                     name = "Date format",
@@ -130,12 +134,12 @@ LR_OptionsDefaults = {
     profile = {
         enable = true,
         colors={
-            rankColor0 = {
+ --[[           rankColor0 = {
                     r = 255,
                     g = 0,
                     b = 0,
                     a = 1
-            }
+            }]]
         },
         promotions = {
                 rank1promotionenabled = false,
@@ -151,12 +155,12 @@ LR_OptionsDefaults = {
 
 }
 for i = 0, 9 do
-	LR_OptionsTable.args.colors["rankColor"..i] = {
+	--[[LR_OptionsTable.args.colors["rankColor"..i] = {
 		name = "Rank "..i.." color",
 		type = "color",
 		set = "SetRankColor",
 		get = "GetRankColor"
-    }
+    }]]
 	LR_OptionsDefaults.profile.colors["rankColor"..i] = {r = 255, g = 0, b = 0, a = 1};
 end
 
@@ -192,34 +196,6 @@ function LR_ColorBreak(color)
 	return tonumber(string.sub(color,3,4),16), tonumber(string.sub(color,5,6),16),tonumber(string.sub(color,7,8),16),tonumber(string.sub(color,1,2),16)
 end
 
-
-LiveRoster = LibStub("AceAddon-3.0"):NewAddon("LiveRoster", "AceConsole-3.0", "AceEvent-3.0");
-function LiveRoster:OnInitialize()
-    LibStub("AceConfig-3.0"):RegisterOptionsTable("LiveRoster", LR_OptionsTable, {"lr", "liveroster"})
-    self.db = LibStub("AceDB-3.0"):New("LiveRosterDB", LR_OptionsDefaults, false);
-    self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("LiveRoster", "LiveRoster");
-    self.db.profile.promotionDays = self.db.profile.promotionDays or {}; -- a table of defaults.
-
-    self.db.profile.activeDays = self.db.profile.activeDays or {}; -- a table of defaults.
-    self.db.profile.promotionEnabled = self.db.profile.promotionEnabled or {}; --a table of defaults
-    for i, v in ipairs(LIVEROSTER_RANK_COLORS) do
-        if not self.db.profile.colors["rankColor"..i] then
-			local r, g, b, a = LR_ColorBreak(v);
-            self.db.profile.colors["rankColor"..i] = { r = r, g = g, b = b, a = a};
-		end
-	end
-end
-
-function LiveRoster:OnEnable()
-    --Register events here.
-end
-function LiveRoster:OnDisable()
-    --Unregister events here.
-end
-
-
-
-
 function LiveRoster:SetEnable(_,value)
     self.db.profile.enabled = value;
 end
@@ -228,7 +204,7 @@ function LiveRoster:GetEnable(_)
 end
 
 function LiveRoster:ValidateCommentFormat(_,value)
---use date length, names included, text included, to decide if comment could be too long.
+    --use date length, names included, text included, to decide if comment could be too long.
 
 end
 function LiveRoster:SetActiveDays(rank,value)
@@ -257,6 +233,34 @@ function LiveRoster:GetRankColor(info)
     local c = self.db.profile.colors[info[#info]] or {r = 1, g= 1, b=1, a=1};
     return c.r, c.g, c.b, 1;
 end
+
+
+
+function LiveRoster:OnInitialize()
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("LiveRoster", LR_OptionsTable, {"lr", "liveroster"})
+    self.db = LibStub("AceDB-3.0"):New("LiveRosterDB", LR_OptionsDefaults, true);
+    self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("LiveRoster", "LiveRoster");
+    self.db.profile.promotionDays = self.db.profile.promotionDays or {}; -- a table of defaults.
+
+    self.db.profile.activeDays = self.db.profile.activeDays or {}; -- a table of defaults.
+    self.db.profile.promotionEnabled = self.db.profile.promotionEnabled or {}; --a table of defaults
+    for i, v in ipairs(LIVEROSTER_RANK_COLORS) do
+        if not self.db.profile.colors["rankColor"..i] then
+			local r, g, b, a = LR_ColorBreak(v);
+            self.db.profile.colors["rankColor"..i] = { r = r, g = g, b = b, a = a};
+		end
+	end
+end
+
+function LiveRoster:OnEnable()
+    --Register events here.
+end
+function LiveRoster:OnDisable()
+    --Unregister events here.
+end
+
+
+
 
     -- Debug
 LREVERBOSE = 0;
